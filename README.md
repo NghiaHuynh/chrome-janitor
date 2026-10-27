@@ -1,5 +1,7 @@
 # Chrome Janitor
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A small native macOS app that finds and stops the processes agent sessions leave
 behind: orphaned headless Chrome instances that keep `Google Chrome.app` locked,
 and the TCP ports nobody remembers opening.
@@ -138,6 +140,7 @@ Sources/
 Resources/       Info.plist, AppIcon.icns, icon-source.png, vi|en.lproj
 Tools/           makeicon.sh + maskicon.swift (icon grid generator)
 build.sh         compile, bundle, sign
+LICENSE          MIT
 ```
 
 ## Localisation notes
@@ -171,6 +174,11 @@ transfer-encoding. Send a `Content-Length` instead:
 git -c http.postBuffer=524288000 push
 ```
 
+## License
+
+MIT — see [LICENSE](LICENSE). Use it, fork it, ship it; just keep the copyright
+notice. No warranty: this app sends real signals to real processes.
+
 ## Tóm tắt tiếng Việt
 
 **Tác dụng.** Các phiên agent chạy Chrome ở chế độ headless rồi bỏ lại: tiến trình
@@ -199,3 +207,6 @@ cổng debug và các dev server mà không ai nhớ đã bật.
 **Build.** Cần Swift toolchain, không có `.xcodeproj`: `./build.sh` rồi
 `open build/ChromeJanitor.app`. Chữ ký ad-hoc nên lần đầu có thể phải chuột phải →
 **Open**. Yêu cầu macOS 12 trở lên.
+
+**Giấy phép.** MIT — xem [LICENSE](LICENSE). Dùng, sửa, phát hành lại đều được,
+miễn giữ dòng bản quyền. Không bảo hành: app này gửi tín hiệu thật tới tiến trình thật.
