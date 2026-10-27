@@ -1,0 +1,4 @@
+/* English base localization — see the note in ../vi.lproj/Localizable.strings.
+   The app's own UI strings live in Sources/L10n.swift. */
+
+"app_name" = "Chrome Janitor";

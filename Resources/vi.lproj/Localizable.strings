@@ -1,0 +1,6 @@
+/* Declares a Vietnamese localization for the bundle, so AppKit renders its
+   standard menus (About / Hide / Quit / File / Edit / View / Window / Help)
+   in Vietnamese when the app runs with AppleLanguages = (vi).
+   The app's own UI strings live in Sources/L10n.swift. */
+
+"app_name" = "Chrome Janitor";
