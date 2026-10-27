@@ -11,7 +11,7 @@ rm -rf "$OUT"
 mkdir -p "$OUT/Contents/MacOS" "$OUT/Contents/Resources"
 
 # A duplicate key in the L10n dictionary literal traps at launch, not at compile time.
-dupes=$(grep -o '^        "[a-z0-9_]*"' Sources/L10n.swift | sort | uniq -d || true)
+dupes=$(grep -oE '"[a-z0-9_]+":' Sources/L10n.swift | sort | uniq -d || true)
 if [ -n "$dupes" ]; then echo "ERROR: duplicate L10n keys: $dupes" >&2; exit 1; fi
 
 echo "==> compiling ($ARCH)"

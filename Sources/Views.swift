@@ -259,7 +259,7 @@ struct ChromeTab: View {
 
     @ViewBuilder
     private var detail: some View {
-        if let root = store.proc(store.selection ?? -1) ?? store.roots.first {
+        if let root = store.proc(store.selection ?? -1) {
             DetailView(store: store, root: root, l: l)
         } else {
             VStack(spacing: 10) {
@@ -389,7 +389,9 @@ struct PortsTab: View {
 
             List(selection: $store.portSelection) {
                 ForEach(visible) { listener in
-                    PortRow(listener: listener, l: l)
+                    PortRow(listener: listener,
+                            treeCount: store.descendants(of: listener.pid).count,
+                            l: l)
                         .tag(listener.id)
                         .contextMenu {
                             Button(l["btn_stop_port"], action: { store.killListener(listener) })
@@ -410,14 +412,14 @@ struct PortsTab: View {
 
     @ViewBuilder
     private var detail: some View {
-        if let listener = store.listener(store.portSelection ?? "") ?? visible.first {
+        if let listener = store.listener(store.portSelection ?? "") {
             PortDetailView(store: store, listener: listener, l: l)
         } else {
             VStack(spacing: 10) {
                 Image(systemName: "network")
                     .font(.system(size: 38, weight: .light))
                     .foregroundColor(.secondary)
-                Text(l["ports_subtitle"]).font(.title3)
+                Text(store.listeners.isEmpty ? l["ports_subtitle"] : l["ports_pick"]).font(.title3)
                 Text(l["ports_hint"]).font(.caption).foregroundColor(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -427,6 +429,7 @@ struct PortsTab: View {
 
 struct PortRow: View {
     let listener: PortListener
+    let treeCount: Int
     @ObservedObject var l: L10n
 
     var body: some View {
@@ -445,6 +448,7 @@ struct PortRow: View {
                 HStack(spacing: 8) {
                     Text(l.f("row_pid", listener.pid))
                     Text(listener.addresses.joined(separator: ", "))
+                    if treeCount > 0 { Text(l.f("row_helpers", treeCount)) }
                     Text(l.f("row_up", Fmt.duration(listener.age, l)))
                     Text(Fmt.bytes(listener.rssBytes))
                 }
@@ -471,6 +475,10 @@ struct PortDetailView: View {
     @ObservedObject var store: ProcessStore
     let listener: PortListener
     @ObservedObject var l: L10n
+    @State private var confirmKill = false
+    @State private var killForced = false
+
+    private var treeCount: Int { store.descendants(of: listener.pid).count }
 
     var body: some View {
         ScrollView {
@@ -510,16 +518,32 @@ struct PortDetailView: View {
                         .cornerRadius(6)
                 }
 
-                HStack(spacing: 10) {
-                    Button(l["btn_stop_port"]) { store.killListener(listener) }
-                    Button(l["btn_force"], role: .destructive) { store.killListener(listener, force: true) }
-                    Button(l["btn_copy"]) {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(listener.command, forType: .string)
+                VStack(alignment: .leading, spacing: 8) {
+                    if treeCount > 0 {
+                        Text(l.f("port_tree_radius", treeCount))
+                            .font(.caption)
+                            .foregroundColor(.orange)
                     }
-                    Spacer()
+                    HStack(spacing: 10) {
+                        Button(l["btn_stop_port"]) { killForced = false; confirmKill = true }
+                        Button(l["btn_force"], role: .destructive) { killForced = true; confirmKill = true }
+                        Button(l["btn_copy"]) {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(listener.command, forType: .string)
+                        }
+                        Spacer()
+                    }
                 }
                 .padding(.top, 4)
+                .alert(l["confirm_port_title"], isPresented: $confirmKill) {
+                    Button(l["alert_cancel"], role: .cancel) {}
+                    Button(killForced ? l["btn_force"] : l["btn_stop_port"], role: .destructive) {
+                        store.killListener(listener, force: killForced)
+                    }
+                } message: {
+                    Text(l.f("confirm_port_body", listener.procName, listener.pid,
+                             treeCount > 0 ? l.f("port_tree_radius", treeCount) : l["port_tree_none"]))
+                }
             }
             .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
